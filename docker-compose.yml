@@ -1,0 +1,25 @@
+version: '2'
+
+services:
+  redis:
+    image: redis
+    command: redis-server --requirepass "pythonrq"
+    ports:
+      - "6666:6379"
+
+
+  web:
+    build: .
+    command: python run.py
+    links:
+      - redis:redis
+    ports:
+      - "5252:5252"
+    environment:
+      - REDIS_CONN=redis://:pythonrq@redis:6379/0
+
+  worker:
+    build: .
+    links:
+      - redis:redis
+    command: rq worker -u redis://:pythonrq@redis:6379/0
